@@ -1,0 +1,134 @@
+<html>
+<style>
+    .centerAlign {
+        margin-right: auto;
+        margin-left: auto;
+        width: fit-content;
+    }
+
+    .flex {
+        display: flex;
+    }
+
+    .h-30 {
+        height: 30px;
+    }
+
+    .mr-30 {
+        margin-right: 30px;
+    }
+
+    .buttonStyle {
+        color: white;
+        background: #56cc56;
+        padding: 5px 15px;
+        border-radius: 7px;
+        border: none;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<body>
+
+    <div class="centerAlign">
+        <div class="flex">
+            <div>
+                <div class="h-30 mr-30">Credit Card Number: </div>
+                <div class="h-30 mr-30">CVV: </div>
+                <div class="h-30 mr-30">Card Holder Name: </div>
+                <div class="h-30 mr-30">Expiration Date: </div>
+            </div>
+            <div>
+                <div class="h-30"><input input type="text" pattern="\d*" maxlength="16" id="cardNumber"> </div>
+                <div class="h-30"><input input type="text" pattern="\d*" maxlength="3" id="cvv"> </div>
+                <div class="h-30"><input type="text" id="name"> </div>
+                <div class="h-30"><input type="text" id="expiryDate" placeholder="MM/YY" maxlength='5'> </div>
+            </div>
+
+
+        </div>
+        <button class="buttonStyle" onClick="onSubmit()">submit</button>
+    </div>
+
+</body>
+<script>
+    const onSubmit = () => {
+
+
+        let errorString = [];
+
+        //validation for card number
+        let cardNumber = document.getElementById("cardNumber").value
+        if (cardNumber.length != 0) {
+            if (!parseInt(cardNumber.slice(0)) || parseInt(cardNumber.slice(0)).toString().length !== 16) {
+                errorString.push("Card Number wrong")
+            }
+        } else {
+            errorString.push("Card Number empty")
+        }
+
+        //validation for cvv
+        let cvv = document.getElementById("cvv").value
+        if (cvv.length != 0) {
+            if (!parseInt(cvv.slice(0)) || parseInt(cvv.slice(0)).toString().length !== 3) {
+                errorString.push("CVV wrong")
+            }
+        } else {
+            errorString.push("CVV empty")
+        }
+
+        //validation for name
+        let name = document.getElementById("name").value
+        if (name.length === 0) {
+            errorString.push("Name is empty")
+        }
+        else if (!isNaN(name)) {
+            errorString.push("Name should not be number")
+        }
+
+        //validation for expiry date
+        let expiryDate = document.getElementById("expiryDate").value
+        if (expiryDate.length != 0) {
+            if (expiryDate.length < 5 || !parseInt(expiryDate.slice(0, 2)) || parseInt(expiryDate.slice(0, 2)).toString().length != 2 || expiryDate[2] !== '/' || !parseInt(expiryDate.slice(3)) || parseInt(expiryDate.slice(3)).toString().length != 2) {
+                errorString.push("Expiry Date format wrong")
+            }
+        }
+        else {
+            errorString.push('Expiry date empty');
+        }
+
+        if (errorString.length) {
+            alert(errorString.join(','));
+        }
+        else {
+            $.ajax({
+                url: '/submit-card-details',
+                type: "POST",
+                data: { "cardNumber": cardNumber, "cvv": cvv, "name": name, "expiryDate": expiryDate },
+                dataType: 'json',
+                success: function (response) {
+                    alert(response.msg);
+                    document.getElementById("cardNumber").value = "";
+                    document.getElementById("cvv").value = "";
+                    document.getElementById("name").value = "";
+                    document.getElementById("expiryDate").value = "";
+                },
+                error: function (error) {
+                    alert(`ERROR - ${JSON.parse(error.responseText).error}`);                    
+                }
+            });
+        }
+    }
+</script>
+
+</html>
